@@ -1,4 +1,7 @@
 [package]
 name = "rydl"
 version = "0.1.0"
-authors = ["Matheus de Alcantara <matheus.de.alcantara@gmail.com>"]
+authors = [
+"Matheus de Alcantara <matheus.de.alcantara@gmail.com>",
+"Alexander Korn <a@lxnd.me>"
+]
