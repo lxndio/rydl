@@ -8,3 +8,4 @@ authors = [
 
 [dependencies]
 ncurses = "5.73.0"
+hlua = "0.1.6"
