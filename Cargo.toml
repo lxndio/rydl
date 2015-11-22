@@ -5,3 +5,7 @@ authors = [
 "Matheus de Alcantara <me@matheus.ninja>",
 "Alexander Korn <a@lxnd.me>"
 ]
+
+
+[dependencies]
+ncurses = "5.73.0"
