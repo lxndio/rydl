@@ -6,6 +6,5 @@ authors = [
 "Alexander Korn <a@lxnd.me>"
 ]
 
-
 [dependencies]
 ncurses = "5.73.0"
