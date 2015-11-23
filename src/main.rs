@@ -1,29 +1,55 @@
 extern crate ncurses;
 extern crate hlua;
 
+use std::env;
+use std::io::Read;
+use std::fs;
+use std::path::Path;
+
 use ncurses::*;
 
-fn main() {
-	initscr ();
-	refresh ();
+fn prompt () -> i32 {
+	printw ("<!- Press any key.");
+	getch()
+}
 
-	let mut ch = getch();
-	let mut chars: Vec<char> = Vec::new();
+fn open_reader () -> fs::File {
+	let args: Vec<_> = env::args().collect();
 
-	while ch != 33 {
-		let chr: char = (ch as u8) as char;
-
-		match chr {
-			'\x1b' => {
-				endwin(); return;
-			},
-			_ => {
-				chars.push(chr)
-			}
-		}
-		ch = getch();
+	if args.len () <= 2 {
+		println!("Usage: \n\t{} <file>", args[0]);
+		panic!("Exiting.");
 	}
 
-	getch ();
-	endwin ();
+	let reader = fs::File::open (Path::new(&args[1])); // construct a new reader
+	reader.ok().expect ("Unable to open file, exiting.")
+}
+
+fn main () {
+	initscr();
+	raw();
+	keypad(stdscr, true);
+	noecho();
+
+	let mut max_x = 0;
+	let mut max_y = 0;
+	getmaxyx(stdscr, &mut max_y, &mut max_x);
+
+	for ch in open_reader().bytes() {
+		if ch.is_err() { break; }
+		let ch = ch.unwrap();
+
+		let mut cur_x = 0;
+		let mut cur_y = 0;
+		getyx(stdscr, &mut cur_y, &mut cur_x);
+
+		if cur_y == (max_y - 1) {
+			prompt();
+
+			clear();
+			mv(0, 0);
+		} else {
+			addch(ch as chtype);
+		}
+	}
 }
