@@ -1,48 +1,180 @@
-extern crate ncurses;
-extern crate hlua;
+extern crate termion;
 
-use std::env;
-use std::io::Read;
-use std::fs;
-use std::path::Path;
+use termion::{clear, color, terminal_size};
+use termion::event::Key;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
+use std::io::{Write, stdout, stdin, Stdin, Stdout};
 
-use ncurses::*;
+#[derive(PartialEq)]
+pub enum EditorMode {
+    Command,
+    Insert,
+}
 
-fn prompt () -> i32
-	{ printw ("<!- Press any key.");
-	getch() }
+impl EditorMode {
+    fn name(&self) -> String {
+        match *self {
+            EditorMode::Command => String::from("COMMAND"),
+            EditorMode::Insert  => String::from("INSERT"),
+        }
+    }
+}
 
-fn open_reader () -> fs::File
-	{ let args: Vec<_> = env::args().collect();
+pub struct Editor {
+    width: u16,
+    height: u16,
 
-	if args.len () <= 2
-	{ println!("Usage: \n\t{} <file>", args[0]);
-		panic!("Exiting."); }
+    buffer: Vec<String>,
+    line: String,
+    current_line: usize,
 
-	let reader = fs::File::open (Path::new(&args[1])); // construct a new reader
-	reader.ok().expect ("Unable to open file, exiting.") }
+    x: u16,
+    y: u16,
+    mode: EditorMode,
 
-fn main ()
-	{ initscr();
-	raw();
-	keypad(stdscr, true);
-	noecho();
+    running: bool,
+}
 
-	let mut max_x = 0;
-	let mut max_y = 0;
-	getmaxyx(stdscr, &mut max_y, &mut max_x);
+impl Editor {
+    pub fn new() -> Editor {
+        let (width, height) = terminal_size().expect("Could not get terminal size.");
 
-	for ch in open_reader().bytes()
-		{ if ch.is_err()
-				{ break; }
-			let ch = ch.unwrap();
+        Editor {
+            width,
+            height,
 
-			let mut cur_x = 0;
-			let mut cur_y = 0;
-			getyx(stdscr, &mut cur_y, &mut cur_x);
+            buffer: Vec::new(),
+            line: String::new(),
+            current_line: 0,
 
-			if cur_y == (max_y - 1)
-				{ prompt();
-				clear();
-				mv(0, 0); } else {
-				addch(ch as chtype); } } }
+            x: 1,
+            y: 1,
+            mode: EditorMode::Command,
+
+            running: true,
+        }
+    }
+
+    fn init(&mut self) {
+        write!(stdout(),
+           "{}{}{}",
+           termion::clear::All,
+           termion::cursor::Goto(1, 1),
+           termion::cursor::Show)
+            .unwrap();
+    }
+
+    fn draw(&mut self) {
+        self.draw_bar();
+    }
+
+    fn draw_bar(&mut self) {
+        for x in 0..=self.width {
+            write!(stdout(),
+                "{}{} ",
+                color::Bg(color::White),
+                termion::cursor::Goto(x, self.height-1)).unwrap();
+        }
+
+        if self.mode != EditorMode::Command {
+            write!(stdout(),
+                "{}{}-- {} --",
+                color::Fg(color::Black),
+                termion::cursor::Goto(2, self.height-1),
+                self.mode.name()).unwrap();
+        }
+
+        write!(stdout(),
+            "{}{}{}",
+            color::Fg(color::Reset),
+            color::Bg(color::Reset),
+            termion::cursor::Goto(self.x, self.y)).unwrap();
+
+        stdout().flush().unwrap();
+    }
+
+    fn handle_keys(&mut self) {
+        let stdin = stdin();
+        let mut stdout = stdout().into_raw_mode().unwrap();
+
+        for c in stdin.keys() {
+            if self.mode == EditorMode::Command {
+                match c.unwrap() {
+                    Key::Char('i') => {
+                        self.mode = EditorMode::Insert;
+                        self.draw();
+                    },
+                    Key::Esc => {
+                        self.running = false;
+                        break;
+                    }
+                    _ => {},
+                }
+            } else if self.mode == EditorMode::Insert {
+                match c.unwrap() {
+                    Key::Char(c) => {
+                        if c == '\n' {
+                            self.x = 1;
+                            self.y += 1;
+
+                            self.buffer.push(self.line.to_string());
+                            self.line = String::new();
+                            self.current_line += 1;
+
+                            write!(stdout, "{}",
+                                termion::cursor::Goto(self.x, self.y)).unwrap();
+                        } else {
+                            self.line.push(c);
+
+                            write!(stdout, "{}{}",
+                                termion::cursor::Goto(self.x, self.y),
+                                c).unwrap();
+
+                            if self.x < self.width { self.x += 1; }
+                            else {
+                                self.x = 1;
+                                self.y += 1;
+                            }
+                        }
+                    },
+                    Key::Backspace => {
+                        self.line.pop();
+                        write!(stdout, "{} {}",
+                            termion::cursor::Goto(self.x-1, self.y),
+                            termion::cursor::Goto(self.x-1, self.y)).unwrap();
+
+                        if self.x > 1 { self.x -= 1; }
+                        else {
+                            self.x = self.width;
+                            self.y -= 1;
+                        }
+                    }
+                    Key::Esc => {
+                        self.mode = EditorMode::Command;
+                        self.draw();
+                    },
+                    _ => {},
+                }
+            }
+
+            stdout.flush().unwrap();
+        }
+    }
+
+    pub fn handle(&mut self) {
+        while self.running {
+            self.draw();
+            self.handle_keys();
+
+            stdout().flush().unwrap();
+        }
+    }
+}
+
+fn main() {
+    let mut editor = Editor::new();
+
+    editor.init();
+    editor.handle();
+}
