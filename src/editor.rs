@@ -1,8 +1,10 @@
-use std::io::{stdin, stdout, Stdin, Stdout, Write};
+use std::io::{stdin, stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
-use termion::{clear, color, terminal_size};
+use termion::{color, terminal_size};
+
+use crate::io::IO;
 
 #[derive(PartialEq)]
 pub enum EditorMode {
@@ -20,20 +22,20 @@ impl EditorMode {
 }
 
 pub struct Editor {
-    width: u16,
-    height: u16,
+    pub width: u16,
+    pub height: u16,
 
-    buffer: Vec<String>,
-    line: String,
-    current_line: usize,
-    top_line: usize,
+    pub buffer: Vec<String>,
+    pub line: String,
+    pub current_line: usize,
+    pub top_line: usize,
 
-    x: u16,
-    start_x: u16,
-    y: u16,
-    mode: EditorMode,
+    pub x: u16,
+    pub start_x: u16,
+    pub y: u16,
+    pub mode: EditorMode,
 
-    running: bool,
+    pub running: bool,
 }
 
 impl Editor {
@@ -74,7 +76,7 @@ impl Editor {
         self.draw();
     }
 
-    fn draw(&mut self) {
+    pub fn draw(&mut self) {
         self.draw_bar();
         self.draw_buffer();
         self.draw_line_numbers();
@@ -83,7 +85,7 @@ impl Editor {
         stdout().into_raw_mode().unwrap().flush().unwrap();
     }
 
-    fn draw_bar(&mut self) {
+    pub fn draw_bar(&mut self) {
         let mut stdout = stdout().into_raw_mode().unwrap();
 
         let output = " ".repeat(self.width as usize);
@@ -118,7 +120,7 @@ impl Editor {
         .unwrap();
     }
 
-    fn draw_line_numbers(&mut self) {
+    pub fn draw_line_numbers(&mut self) {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let mut y = 1;
 
@@ -148,7 +150,7 @@ impl Editor {
         }
     }
 
-    fn draw_buffer(&mut self) {
+    pub fn draw_buffer(&mut self) {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let mut y = 1;
 
@@ -170,34 +172,35 @@ impl Editor {
             y += 1;
         }
     }
-    fn draw_cursor(&mut self) {
+
+    pub fn draw_cursor(&mut self) {
         let mut stdout = stdout().into_raw_mode().unwrap();
 
         write!(stdout, "{}", termion::cursor::Goto(self.x, self.y)).unwrap();
     }
 
-    fn move_cursor_left(&mut self) {
+    pub fn move_cursor_left(&mut self) {
         // TODO make + 4 variable depending on the length of the line numbers
         if self.x > 1 + 4 {
             self.x -= 1;
         }
     }
 
-    fn move_cursor_right(&mut self) {
+    pub fn move_cursor_right(&mut self) {
         // TODO make + 4 variable depending on the length of the line numbers
         if (self.x as usize) <= self.buffer.get(self.current_line).unwrap().len() + 4 {
             self.x += 1;
         }
     }
 
-    fn move_cursor_up(&mut self) {
+    pub fn move_cursor_up(&mut self) {
         if self.y > 1 {
             self.y -= 1;
             self.current_line -= 1;
         }
     }
 
-    fn move_cursor_down(&mut self) {
+    pub fn move_cursor_down(&mut self) {
         // TODO current_line and scrolling handling
         if self.y < self.height - 2 {
             self.y += 1;
@@ -205,7 +208,7 @@ impl Editor {
         }
     }
 
-    fn move_cursor_new_line(&mut self) {
+    pub fn move_cursor_new_line(&mut self) {
         // TODO current_line and scrolling handling
         if self.y >= self.height - 3 {
             self.x = self.start_x;
@@ -216,84 +219,63 @@ impl Editor {
         }
     }
 
-    fn move_cursor_eocl(&mut self) {
+    pub fn move_cursor_eocl(&mut self) {
         // TODO make + 4 variable depending on the length of the line numbers
         self.x = (self.buffer.get(self.current_line).unwrap().len() + 1 + 4) as u16;
         self.y = (self.current_line - self.top_line + 1) as u16;
     }
 
-    fn handle_keys(&mut self) {
+    pub fn read_command(&mut self) {
         let stdin = stdin();
         let mut stdout = stdout().into_raw_mode().unwrap();
 
+        write!(
+            stdout,
+            "{}{}{}:",
+            color::Fg(color::Black),
+            color::Bg(color::White),
+            termion::cursor::Goto(1, self.height - 1)
+        ).unwrap();
+        stdout.flush().unwrap();
+
+        let mut command = String::new();
+
         for c in stdin.keys() {
-            if self.mode == EditorMode::Command {
-                match c.unwrap() {
-                    Key::Char('i') => {
-                        self.mode = EditorMode::Insert;
-                        self.draw();
-                    },
-                    Key::Char('h') => {
-                        self.move_cursor_left();
-                    },
-                    Key::Char('j') => {
-                        self.move_cursor_down();
-                    },
-                    Key::Char('k') => {
-                        self.move_cursor_up();
-                    },
-                    Key::Char('l') => {
-                        self.move_cursor_right();
-                    },
-                    Key::Esc => {
-                        self.running = false;
-                        break;
-                    },
-                    _ => {},
-                }
-            } else if self.mode == EditorMode::Insert {
-                match c.unwrap() {
-                    Key::Char(c) => {
-                        if c == '\n' {
-                            self.current_line += 1;
-                            self.move_cursor_new_line();
-                            self.buffer.push(String::new());
-                        } else {
-                            // unwrap should be save because current_line should always be in range per invariant
-                            self.buffer.get_mut(self.current_line).unwrap().push(c);
+            match c.unwrap() {
+                Key::Char('\n') => {
+                    break;
+                },
+                Key::Char(c) => {
+                    command.push(c);
 
-                            self.move_cursor_right();
-                        }
-                    },
-                    Key::Backspace => {
-                        if self.buffer.get_mut(self.current_line).unwrap().pop() == None {
-                            if self.current_line > 1 {
-                                self.buffer.remove(self.current_line);
-                                self.current_line -= 1;
-                                self.move_cursor_eocl();
-                            }
-                        } else {
-                            self.move_cursor_left();
-                        }
-                    },
-                    Key::Esc => {
-                        self.mode = EditorMode::Command;
-                        self.draw();
-                    },
-                    _ => {},
-                }
+                    write!(stdout, "{}", c).unwrap();
+                    stdout.flush().unwrap();
+                },
+                Key::Backspace => {
+                    if command.len() > 0 {
+                        command.pop();
+
+                        write!(stdout,
+                            "{}{}:{}",
+                            termion::clear::CurrentLine,
+                            termion::cursor::Goto(1, self.height - 1),
+                            command
+                        ).unwrap();
+                        stdout.flush().unwrap();
+                    }
+                },
+                Key::Esc => {
+                    return;
+                },
+                _ => {},
             }
-
-            self.draw();
         }
-    }
 
-    pub fn handle(&mut self) {
-        while self.running {
-            self.draw();
-            self.handle_keys();
-
-            stdout().flush().unwrap();
+        // TODO make commands scriptable
+        if command == "q" {
+            self.running = false;
+        } else if command == "w" {
+            self.save();
         }
     }
 }
