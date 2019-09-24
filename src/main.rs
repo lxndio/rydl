@@ -28,8 +28,10 @@ pub struct Editor {
     buffer: Vec<String>,
     line: String,
     current_line: usize,
+    top_line: usize,
 
     x: u16,
+    start_x: u16,
     y: u16,
     mode: EditorMode,
 
@@ -46,9 +48,11 @@ impl Editor {
 
             buffer: Vec::new(),
             line: String::new(),
-            current_line: 0,
+            current_line: 1,
+            top_line: 1,
 
             x: 1,
+            start_x: 5,
             y: 1,
             mode: EditorMode::Command,
 
@@ -57,41 +61,89 @@ impl Editor {
     }
 
     fn init(&mut self) {
+        self.x = self.start_x;
+        self.buffer.push(String::from("----- LINE 0 -----")); // Because lines are indexed from 1
+
         write!(stdout(),
            "{}{}{}",
            termion::clear::All,
            termion::cursor::Goto(1, 1),
            termion::cursor::Show)
             .unwrap();
+        
+        self.draw();
     }
 
     fn draw(&mut self) {
         self.draw_bar();
+        self.draw_line_numbers();
+        //self.draw_buffer();
     }
 
     fn draw_bar(&mut self) {
-        for x in 0..=self.width {
-            write!(stdout(),
+        let mut stdout = stdout().into_raw_mode().unwrap();
+
+        for x in 1..=self.width {
+            write!(stdout,
                 "{}{} ",
                 color::Bg(color::White),
                 termion::cursor::Goto(x, self.height-1)).unwrap();
         }
 
         if self.mode != EditorMode::Command {
-            write!(stdout(),
+            write!(stdout,
                 "{}{}-- {} --",
                 color::Fg(color::Black),
                 termion::cursor::Goto(2, self.height-1),
                 self.mode.name()).unwrap();
         }
 
-        write!(stdout(),
+        write!(stdout,
             "{}{}{}",
             color::Fg(color::Reset),
             color::Bg(color::Reset),
             termion::cursor::Goto(self.x, self.y)).unwrap();
 
-        stdout().flush().unwrap();
+        stdout.flush().unwrap();
+    }
+
+    fn draw_line_numbers(&mut self) {
+        let mut stdout = stdout().into_raw_mode().unwrap();
+
+        let to = if self.buffer.len()-self.top_line >= usize::from(self.height)-2 { usize::from(self.height)-2-self.top_line } else { self.buffer.len() };
+
+    	for y in self.top_line..=to {
+            let x = match y.to_string().len() {
+                1 => 3,
+                2 => 2,
+                3 => 1,
+                _ => 1,
+            };
+
+            write!(stdout,
+                "{}{}",
+                termion::cursor::Goto(x, y as u16), // TODO probably replace as with try_from()
+                y).unwrap();
+        }
+    }
+
+    fn draw_buffer(&mut self) {
+        let mut stdout = stdout().into_raw_mode().unwrap();
+        let mut y = 1;
+
+        for i in self.top_line..=self.top_line + usize::from(self.height)-2 {
+            match self.buffer.get(i) {
+                Some(line) => {
+                    write!(stdout,
+                        "{}{}",
+                        termion::cursor::Goto(self.start_x, y),
+                        line).unwrap();
+                },
+                None => {},
+            }
+
+            y += 1;
+        }
     }
 
     fn handle_keys(&mut self) {
@@ -115,12 +167,16 @@ impl Editor {
                 match c.unwrap() {
                     Key::Char(c) => {
                         if c == '\n' {
-                            self.x = 1;
+                            self.x = self.start_x;
                             self.y += 1;
 
                             self.buffer.push(self.line.to_string());
                             self.line = String::new();
                             self.current_line += 1;
+
+                            if self.current_line > self.top_line + usize::from(self.height)-2 {
+                                self.top_line += 1;
+                            }
 
                             write!(stdout, "{}",
                                 termion::cursor::Goto(self.x, self.y)).unwrap();
@@ -133,7 +189,7 @@ impl Editor {
 
                             if self.x < self.width { self.x += 1; }
                             else {
-                                self.x = 1;
+                                self.x = self.start_x;
                                 self.y += 1;
                             }
                         }
@@ -159,6 +215,7 @@ impl Editor {
             }
 
             stdout.flush().unwrap();
+            self.draw();
         }
     }
 
