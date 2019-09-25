@@ -3,6 +3,7 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
+use crate::drawer::Drawer;
 use crate::editor::{Editor, EditorMode};
 
 pub trait Handler {
