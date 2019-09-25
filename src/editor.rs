@@ -5,6 +5,7 @@ use termion::raw::IntoRawMode;
 use termion::{color, terminal_size};
 
 use crate::io::IO;
+use crate::util::split_string_every;
 
 #[derive(PartialEq)]
 pub enum EditorMode {
@@ -29,6 +30,7 @@ pub struct Editor {
     pub line: String,
     pub current_line: usize,
     pub top_line: usize,
+    pub ys_without_own_line: Vec<u16>,
 
     pub x: u16,
     pub start_x: u16,
@@ -50,6 +52,7 @@ impl Editor {
             line: String::new(),
             current_line: 1,
             top_line: 1,
+            ys_without_own_line: Vec::new(),
 
             x: 1,
             start_x: 5,
@@ -131,6 +134,10 @@ impl Editor {
         };
 
         for number in self.top_line..=to {
+            if self.ys_without_own_line.contains(&y) {
+                continue;
+            }
+
             let x = match number.to_string().len() {
                 1 => 3,
                 2 => 2,
@@ -146,7 +153,7 @@ impl Editor {
             )
             .unwrap();
 
-            y +=1 ;
+            y += 1;
         }
     }
 
@@ -154,17 +161,32 @@ impl Editor {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let mut y = 1;
 
-        for i in self.top_line..=self.top_line + usize::from(self.height) - 2 {
+        self.ys_without_own_line = Vec::new();
+
+        for i in self.top_line..=self.top_line + usize::from(self.height) - 4 {
             match self.buffer.get(i) {
                 Some(line) => {
-                    write!(
-                        stdout,
-                        "{}{}{}",
-                        termion::cursor::Goto(self.start_x, y),
-                        termion::clear::CurrentLine,
-                        line
-                    )
-                    .unwrap();
+                    let mut first_part = true;
+
+                    for part in split_string_every(line, (self.width as usize) - 4) { // TODO change 4 as always
+                        write!(
+                            stdout,
+                            "{}{}{}",
+                            termion::cursor::Goto(self.start_x, y),
+                            termion::clear::CurrentLine,
+                            line
+                        )
+                        .unwrap();
+
+                        if !first_part {
+                            self.ys_without_own_line.push(y);
+                        }
+
+                        y += 1;
+                        first_part = false;
+                    }
+
+                    y -= 1;
                 }
                 None => {}
             }
@@ -194,17 +216,38 @@ impl Editor {
     }
 
     pub fn move_cursor_up(&mut self) {
-        if self.y > 1 {
-            self.y -= 1;
+        if self.current_line > 1 {
             self.current_line -= 1;
+
+            if self.y > 1 {
+                self.y -= 1;
+            } else {
+                self.top_line -= 1;
+            }
+
+            // TODO make + 4 variable depending on the length of the line numbers
+            if (self.x as usize) > self.buffer.get(self.current_line).unwrap().len() + 4 {
+                self.x = (self.buffer.get(self.current_line).unwrap().len() + 1 + 4) as u16;
+            }
         }
     }
 
     pub fn move_cursor_down(&mut self) {
-        // TODO current_line and scrolling handling
-        if self.y < self.height - 2 {
-            self.y += 1;
+        if self.current_line < self.buffer.len() - 1 {
             self.current_line += 1;
+
+            if self.y <= self.height - 4 {
+                self.y += 1;
+            } else {
+                self.top_line += 1;
+            }
+
+            // TODO make + 4 variable depending on the length of the line numbers
+            if self.buffer.get(self.current_line) != None
+                && (self.x as usize) > self.buffer.get(self.current_line).unwrap().len() + 4
+            {
+                self.x = (self.buffer.get(self.current_line).unwrap().len() + 1 + 4) as u16;
+            }
         }
     }
 
@@ -235,7 +278,8 @@ impl Editor {
             color::Fg(color::Black),
             color::Bg(color::White),
             termion::cursor::Goto(1, self.height - 1)
-        ).unwrap();
+        )
+        .unwrap();
         stdout.flush().unwrap();
 
         let mut command = String::new();
@@ -244,30 +288,32 @@ impl Editor {
             match c.unwrap() {
                 Key::Char('\n') => {
                     break;
-                },
+                }
                 Key::Char(c) => {
                     command.push(c);
 
                     write!(stdout, "{}", c).unwrap();
                     stdout.flush().unwrap();
-                },
+                }
                 Key::Backspace => {
                     if command.len() > 0 {
                         command.pop();
 
-                        write!(stdout,
+                        write!(
+                            stdout,
                             "{}{}:{}",
                             termion::clear::CurrentLine,
                             termion::cursor::Goto(1, self.height - 1),
                             command
-                        ).unwrap();
+                        )
+                        .unwrap();
                         stdout.flush().unwrap();
                     }
-                },
+                }
                 Key::Esc => {
                     return;
-                },
-                _ => {},
+                }
+                _ => {}
             }
         }
 

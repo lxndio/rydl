@@ -30,27 +30,27 @@ impl Handler for Editor {
                     Key::Char('i') => {
                         self.mode = EditorMode::Insert;
                         self.draw();
-                    },
+                    }
                     Key::Char('h') => {
                         self.move_cursor_left();
-                    },
+                    }
                     Key::Char('j') => {
                         self.move_cursor_down();
-                    },
+                    }
                     Key::Char('k') => {
                         self.move_cursor_up();
-                    },
+                    }
                     Key::Char('l') => {
                         self.move_cursor_right();
-                    },
+                    }
                     Key::Char(':') => {
                         self.read_command();
 
                         if !self.running {
                             break;
                         }
-                    },
-                    _ => {},
+                    }
+                    _ => {}
                 }
             } else if self.mode == EditorMode::Insert {
                 match c.unwrap() {
@@ -65,7 +65,7 @@ impl Handler for Editor {
 
                             self.move_cursor_right();
                         }
-                    },
+                    }
                     Key::Backspace => {
                         if self.buffer.get_mut(self.current_line).unwrap().pop() == None {
                             if self.current_line > 1 {
@@ -76,12 +76,12 @@ impl Handler for Editor {
                         } else {
                             self.move_cursor_left();
                         }
-                    },
+                    }
                     Key::Esc => {
                         self.mode = EditorMode::Command;
                         self.draw();
-                    },
-                    _ => {},
+                    }
+                    _ => {}
                 }
             }
 
