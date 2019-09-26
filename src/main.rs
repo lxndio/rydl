@@ -1,5 +1,6 @@
 extern crate termion;
 
+mod buffer;
 mod drawer;
 mod editor;
 mod handler;

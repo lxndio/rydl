@@ -4,6 +4,7 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::{color, terminal_size};
 
+use crate::buffer::Buffer;
 use crate::drawer::Drawer;
 use crate::io::IO;
 
@@ -26,7 +27,7 @@ pub struct Editor {
     pub width: u16,
     pub height: u16,
 
-    pub buffer: Vec<String>,
+    pub buffer: Buffer,
     pub line: String,
     pub current_line: usize,
     pub top_line: usize,
@@ -48,7 +49,7 @@ impl Editor {
             width,
             height,
 
-            buffer: Vec::new(),
+            buffer: Buffer::new(),
             line: String::new(),
             current_line: 1,
             top_line: 1,
@@ -65,8 +66,6 @@ impl Editor {
 
     pub fn init(&mut self) {
         self.x = self.start_x;
-        self.buffer.push(String::from("----- LINE 0 -----")); // Because lines are indexed from 1
-        self.buffer.push(String::new()); // Line 1 because a file always has at least one line
 
         write!(
             stdout(),

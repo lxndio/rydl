@@ -103,7 +103,7 @@ impl Drawer for Editor {
                 Some(line) => {
                     let mut first_part = true;
 
-                    for part in split_string_every(line, (self.width as usize) - 4) { // TODO change 4 as always
+                    for part in split_string_every(&line, (self.width as usize) - 4) { // TODO change 4 as always
                         write!(
                             stdout,
                             "{}{}{}",
