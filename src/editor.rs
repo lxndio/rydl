@@ -198,7 +198,7 @@ impl Editor {
         if command == "q" {
             self.running = false;
         } else if command == "w" {
-            self.save();
+            self.save().expect("Could not save buffer to file");
         }
     }
 }

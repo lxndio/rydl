@@ -65,7 +65,7 @@ impl Drawer for Editor {
         let to = if self.buffer.len() - self.top_line >= usize::from(self.height) - 2 {
             usize::from(self.height) - 2 - self.top_line
         } else {
-            self.buffer.len() - 1
+            self.buffer.len()
         };
 
         for number in self.top_line..=to {
@@ -109,7 +109,7 @@ impl Drawer for Editor {
                             "{}{}{}",
                             termion::cursor::Goto(self.start_x, y),
                             termion::clear::CurrentLine,
-                            line
+                            part
                         )
                         .unwrap();
 
@@ -122,7 +122,7 @@ impl Drawer for Editor {
                     }
 
                     y -= 1;
-                }
+                },
                 None => {}
             }
 

@@ -5,7 +5,7 @@ use crate::editor::Editor;
 
 pub trait IO {
     fn load(&mut self);
-    fn save(&mut self);
+    fn save(&mut self) -> std::io::Result<()>;
 }
 
 impl IO for Editor {
@@ -13,12 +13,16 @@ impl IO for Editor {
         // TODO
     }
 
-    fn save(&mut self) {
+    fn save(&mut self) -> std::io::Result<()> {
         let file = File::create("test.txt").expect("Could not create file");
         let mut buf = BufWriter::new(file);
 
         for line in self.buffer.iter() {
-            buf.write(line.as_bytes()).expect("Could not write to file");
+            write!(buf, "{}\n", line)?;
         }
+
+        buf.flush()?;
+
+        Ok(())
     }
 }

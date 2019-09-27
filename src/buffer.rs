@@ -4,9 +4,13 @@ pub struct Buffer {
 
 impl Buffer {
     pub fn new() -> Buffer {
-        Buffer {
+        let mut buffer = Buffer {
             lines: Vec::new(),
-        }
+        };
+
+        buffer.push(String::new()); // Add one line to start with
+
+        buffer
     }
 
     pub fn is_empty(&self) -> bool {
@@ -25,9 +29,9 @@ impl Buffer {
         // TODO
     }
 
-    pub fn get(&self, line_number: usize) -> Option<String> {
+    pub fn get(&self, line_number: usize) -> Option<&String> {
         if (1..=self.lines.len()).contains(&line_number) {
-            Some(self.lines.get(line_number-1).unwrap().to_string())
+            Some(self.lines.get(line_number-1).unwrap())
         } else {
             None
         }
@@ -39,6 +43,14 @@ impl Buffer {
         } else {
             None
         }
+    }
+
+    pub fn last(&self) -> Option<&String> {
+        self.lines.last()
+    }
+
+    pub fn last_mut(&mut self) -> Option<&mut String> {
+        self.lines.last_mut()
     }
 
     pub fn push(&mut self, line: String) {
@@ -54,7 +66,7 @@ impl Buffer {
     }
 
     pub fn remove(&mut self, line_number: usize) -> String {
-        self.lines.remove(line_number)
+        self.lines.remove(line_number-1)
     }
 
     // TODO use error type
@@ -64,23 +76,6 @@ impl Buffer {
             self.lines.insert(line_number-1, line);
 
             Ok(())
-        } else {
-            Err(())
-        }
-    }
-
-    // TODO use error type
-    pub fn insert_into_line(&mut self, line_number: usize, pos: usize, string: String) -> Result<(), ()> {
-        if (1..=self.lines.len()).contains(&line_number) {
-            let mut line = self.lines.get_mut(line_number-1).unwrap().to_string();
-
-            if (0..line.len()).contains(&pos) {
-                line.insert_str(pos, &string);
-
-                Ok(())
-            } else {
-                Err(())
-            }
         } else {
             Err(())
         }

@@ -72,6 +72,7 @@ impl Handler for Editor {
                             if self.current_line > 1 {
                                 self.buffer.remove(self.current_line);
                                 self.current_line -= 1;
+                                write!(stdout, "{}", termion::clear::CurrentLine).unwrap();
                                 self.move_cursor_eocl();
                             }
                         } else {
