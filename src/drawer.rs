@@ -1,6 +1,6 @@
 use std::io::{stdout, Write};
-use termion::raw::IntoRawMode;
 use termion::color;
+use termion::raw::IntoRawMode;
 
 use crate::editor::{Editor, EditorMode};
 use crate::util::split_string_every;
@@ -103,7 +103,8 @@ impl Drawer for Editor {
                 Some(line) => {
                     let mut first_part = true;
 
-                    for part in split_string_every(&line, (self.width as usize) - 4) { // TODO change 4 as always
+                    for part in split_string_every(&line, (self.width as usize) - 4) {
+                        // TODO change 4 as always
                         write!(
                             stdout,
                             "{}{}{}",
@@ -122,7 +123,7 @@ impl Drawer for Editor {
                     }
 
                     y -= 1;
-                },
+                }
                 None => {}
             }
 

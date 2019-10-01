@@ -4,9 +4,7 @@ pub struct Buffer {
 
 impl Buffer {
     pub fn new() -> Buffer {
-        let mut buffer = Buffer {
-            lines: Vec::new(),
-        };
+        let mut buffer = Buffer { lines: Vec::new() };
 
         buffer.push(String::new()); // Add one line to start with
 
@@ -31,7 +29,7 @@ impl Buffer {
 
     pub fn get(&self, line_number: usize) -> Option<&String> {
         if (1..=self.lines.len()).contains(&line_number) {
-            Some(self.lines.get(line_number-1).unwrap())
+            Some(self.lines.get(line_number - 1).unwrap())
         } else {
             None
         }
@@ -39,7 +37,7 @@ impl Buffer {
 
     pub fn get_mut(&mut self, line_number: usize) -> Option<&mut String> {
         if (1..=self.lines.len()).contains(&line_number) {
-            Some(self.lines.get_mut(line_number-1).unwrap())
+            Some(self.lines.get_mut(line_number - 1).unwrap())
         } else {
             None
         }
@@ -66,14 +64,14 @@ impl Buffer {
     }
 
     pub fn remove(&mut self, line_number: usize) -> String {
-        self.lines.remove(line_number-1)
+        self.lines.remove(line_number - 1)
     }
 
     // TODO use error type
     pub fn replace_line(&mut self, line_number: usize, line: String) -> Result<(), ()> {
         if (1..=self.lines.len()).contains(&line_number) {
-            self.lines.remove(line_number-1);
-            self.lines.insert(line_number-1, line);
+            self.lines.remove(line_number - 1);
+            self.lines.insert(line_number - 1, line);
 
             Ok(())
         } else {

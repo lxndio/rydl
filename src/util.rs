@@ -22,7 +22,7 @@ mod tests {
 
         let res = split_string_every(s, n);
 
-        let res_expected = vec! {
+        let res_expected = vec![
             String::from("abc"),
             String::from("123"),
             String::from("abc"),
@@ -33,7 +33,7 @@ mod tests {
             String::from("123"),
             String::from("abc"),
             String::from("12"),
-        };
+        ];
 
         assert_eq!(res_expected, res);
     }
