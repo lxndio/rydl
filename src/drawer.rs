@@ -28,6 +28,7 @@ impl Drawer for Editor {
 
         let output = " ".repeat(self.width as usize);
 
+        // Draw bar
         write!(
             stdout,
             "{}{}{}",
@@ -37,6 +38,7 @@ impl Drawer for Editor {
         )
         .unwrap();
 
+        // Draw mode
         if self.mode != EditorMode::Command {
             write!(
                 stdout,
@@ -47,6 +49,17 @@ impl Drawer for Editor {
             )
             .unwrap();
         }
+
+        // Draw column and row
+        write!(
+            stdout,
+            "{}{}{},{}",
+            color::Fg(color::Black),
+            termion::cursor::Goto(self.width - 10, self.height - 1),
+            self.current_line,
+            self.current_char,
+        )
+        .unwrap();
 
         write!(
             stdout,

@@ -60,9 +60,13 @@ impl Handler for Editor {
                             self.current_line += 1;
                             self.move_cursor_new_line();
                             self.buffer.push(String::new());
+                        // TODO split line and move part right to cursor down to next line
                         } else {
                             // unwrap should be save because current_line should always be in range per invariant
-                            self.buffer.get_mut(self.current_line).unwrap().push(c);
+                            self.buffer
+                                .get_mut(self.current_line)
+                                .unwrap()
+                                .insert(self.current_char - 1, c);
 
                             self.move_cursor_right();
                         }

@@ -30,6 +30,7 @@ pub struct Editor {
     pub buffer: Buffer,
     pub line: String,
     pub current_line: usize,
+    pub current_char: usize,
     pub top_line: usize,
     pub ys_without_own_line: Vec<u16>,
 
@@ -52,6 +53,7 @@ impl Editor {
             buffer: Buffer::new(),
             line: String::new(),
             current_line: 1,
+            current_char: 1,
             top_line: 1,
             ys_without_own_line: Vec::new(),
 
@@ -79,15 +81,15 @@ impl Editor {
     }
 
     pub fn move_cursor_left(&mut self) {
-        // TODO make + 4 variable depending on the length of the line numbers
-        if self.x > 1 + 4 {
+        if self.current_char > 1 {
+            self.current_char -= 1;
             self.x -= 1;
         }
     }
 
     pub fn move_cursor_right(&mut self) {
-        // TODO make + 4 variable depending on the length of the line numbers
-        if (self.x as usize) <= self.buffer.get(self.current_line).unwrap().len() + 4 {
+        if self.current_char <= self.buffer.get(self.current_line).unwrap().len() {
+            self.current_char += 1;
             self.x += 1;
         }
     }
@@ -102,8 +104,9 @@ impl Editor {
                 self.top_line -= 1;
             }
 
-            // TODO make + 4 variable depending on the length of the line numbers
-            if (self.x as usize) > self.buffer.get(self.current_line).unwrap().len() + 4 {
+            if self.current_char > self.buffer.get(self.current_line).unwrap().len() {
+                self.current_char = self.buffer.get(self.current_line).unwrap().len() + 1;
+                // TODO make + 4 variable depending on the length of the line numbers
                 self.x = (self.buffer.get(self.current_line).unwrap().len() + 1 + 4) as u16;
             }
         }
@@ -119,10 +122,11 @@ impl Editor {
                 self.top_line += 1;
             }
 
-            // TODO make + 4 variable depending on the length of the line numbers
             if self.buffer.get(self.current_line) != None
-                && (self.x as usize) > self.buffer.get(self.current_line).unwrap().len() + 4
+                && self.current_char > self.buffer.get(self.current_line).unwrap().len()
             {
+                self.current_char = self.buffer.get(self.current_line).unwrap().len() + 1;
+                // TODO make + 4 variable depending on the length of the line numbers
                 self.x = (self.buffer.get(self.current_line).unwrap().len() + 1 + 4) as u16;
             }
         }
@@ -134,6 +138,7 @@ impl Editor {
             self.x = self.start_x;
             self.top_line += 1;
         } else {
+            self.current_char = 1;
             self.x = self.start_x;
             self.y += 1;
         }
@@ -141,6 +146,7 @@ impl Editor {
 
     pub fn move_cursor_eocl(&mut self) {
         // TODO make + 4 variable depending on the length of the line numbers
+        self.current_char = self.buffer.get(self.current_line).unwrap().len() + 1;
         self.x = (self.buffer.get(self.current_line).unwrap().len() + 1 + 4) as u16;
         self.y = (self.current_line - self.top_line + 1) as u16;
     }
