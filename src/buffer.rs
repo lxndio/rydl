@@ -59,8 +59,8 @@ impl Buffer {
         self.lines.pop()
     }
 
-    pub fn insert() {
-        // TODO
+    pub fn insert(&mut self, line_number: usize, line: String) {
+        self.lines.insert(line_number - 1, line);
     }
 
     pub fn remove(&mut self, line_number: usize) -> String {

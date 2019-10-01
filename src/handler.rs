@@ -65,7 +65,7 @@ impl Handler for Editor {
                                 .unwrap()
                                 .split_off(self.current_char - 1);
 
-                            self.buffer.push(String::from(to_next_line));
+                            self.buffer.insert(self.current_line + 1, to_next_line);
 
                             self.current_line += 1;
                             self.move_cursor_new_line();
@@ -93,7 +93,6 @@ impl Handler for Editor {
                     }
                     Key::Esc => {
                         self.mode = EditorMode::Command;
-                        self.draw();
                     }
                     _ => {}
                 }

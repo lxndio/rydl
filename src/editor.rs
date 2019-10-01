@@ -179,7 +179,7 @@ impl Editor {
                     stdout.flush().unwrap();
                 }
                 Key::Backspace => {
-                    if command.len() > 0 {
+                    if !command.is_empty() {
                         command.pop();
 
                         write!(
