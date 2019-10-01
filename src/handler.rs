@@ -57,10 +57,18 @@ impl Handler for Editor {
                 match c.unwrap() {
                     Key::Char(c) => {
                         if c == '\n' {
+                            // Get the part of the current line that is right to the cursor and
+                            // has to go to the next line
+                            let to_next_line = self
+                                .buffer
+                                .get_mut(self.current_line)
+                                .unwrap()
+                                .split_off(self.current_char - 1);
+
+                            self.buffer.push(String::from(to_next_line));
+
                             self.current_line += 1;
                             self.move_cursor_new_line();
-                            self.buffer.push(String::new());
-                        // TODO split line and move part right to cursor down to next line
                         } else {
                             // unwrap should be save because current_line should always be in range per invariant
                             self.buffer
