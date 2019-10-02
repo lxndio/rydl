@@ -1,3 +1,4 @@
+use std::cmp;
 use std::io::{stdout, Write};
 use termion::color;
 use termion::raw::IntoRawMode;
@@ -109,10 +110,29 @@ impl Drawer for Editor {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let mut y = 1;
 
-        self.ys_without_own_line = Vec::new();
+        //self.ys_without_own_line = Vec::new();
 
-        for i in self.top_line..=self.top_line + usize::from(self.height) - 4 {
-            match self.buffer.get(i) {
+        let from = self.top_line;
+        let to = self.top_line + cmp::min(
+            self.buffer.len() - self.top_line,
+            usize::from(self.height) - 4
+        );
+
+        for i in from..=to {
+            let line = self.buffer.get(i).unwrap();
+
+            write!(
+                stdout,
+                "{}{}{}",
+                termion::cursor::Goto(self.start_x, y),
+                termion::clear::CurrentLine,
+                line
+            )
+            .unwrap();
+
+            y += 1;
+
+            /*match self.buffer.get(i) {
                 Some(line) => {
                     let mut first_part = true;
 
@@ -140,7 +160,7 @@ impl Drawer for Editor {
                 None => {}
             }
 
-            y += 1;
+            y += 1;*/
         }
     }
 
