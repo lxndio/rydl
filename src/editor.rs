@@ -39,6 +39,8 @@ pub struct Editor {
     pub y: u16,
     pub mode: EditorMode,
 
+    pub file_name: String,
+
     pub running: bool,
     pub modified: bool,
     pub keep_bar: usize,
@@ -63,6 +65,8 @@ impl Editor {
             start_x: 5,
             y: 1,
             mode: EditorMode::Command,
+
+            file_name: String::new(),
 
             running: true,
             modified: false,
@@ -215,29 +219,55 @@ impl Editor {
                     if !self.modified {
                         self.running = false;
                     } else {
-                        self.draw_bar_text(
-                            String::from("No write since last change (add ! to override)"),
-                            color::Rgb(0xf4, 0x59, 0x05),
-                        );
-                        stdout.flush().unwrap();
+                        self.show_error("No write since last change (add ! to override)");
                     }
                 }
                 "q!" => {
                     self.running = false;
                 }
+                "e" => {
+                    if self.file_name != String::new() {
+                        self.load().expect("Could not load file to buffer");                    
+                    } else {
+                        self.show_error("No file name");
+                    }
+                }
                 "w" => {
-                    self.save().expect("Could not save buffer to file");
+                    if self.file_name != String::new() {
+                        self.save().expect("Could not save buffer to file");                    
+                    } else {
+                        self.show_error("No file name");
+                    }
                 }
                 _ => {}
             },
             2 => match cmd_parts[0] {
-                "r" => {
-                    self.load(String::from(cmd_parts[1]))
+                "e" => {
+                    // TODO add file existence check
+                    self.file_name = String::from(cmd_parts[1]);
+
+                    self.load()
                         .expect("Could not load file to buffer");
+                }
+                "w" => {
+                    // TODO add file existence check
+                    self.file_name = String::from(cmd_parts[1]);
+
+                    self.save()
+                        .expect("Could not save buffer to file");
                 }
                 _ => {}
             },
             _ => {}
         }
+    }
+
+    pub fn show_error(&mut self, msg: &str) {
+        self.draw_bar_text(
+            String::from(msg),
+            color::Rgb(0xf4, 0x59, 0x05),
+        );
+
+        stdout().into_raw_mode().unwrap().flush().unwrap();
     }
 }

@@ -1,19 +1,23 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::io::{BufRead, BufReader, BufWriter, Write, Error, ErrorKind};
 
 use crate::buffer::Buffer;
 use crate::editor::Editor;
 
 pub trait IO {
-    fn load(&mut self, file_name: String) -> std::io::Result<()>;
+    fn load(&mut self) -> std::io::Result<()>;
     fn save(&mut self) -> std::io::Result<()>;
 }
 
 impl IO for Editor {
-    fn load(&mut self, file_name: String) -> std::io::Result<()> {
+    fn load(&mut self) -> std::io::Result<()> {
+        if self.file_name == String::new() {
+            return Err(Error::new(ErrorKind::Other, "No file name set in editor"));
+        }
+
         self.buffer = Buffer::new(false);
 
-        let file = File::open(file_name)?;
+        let file = File::open(&self.file_name)?;
         let buf = BufReader::new(file);
 
         for line in buf.lines() {
@@ -27,12 +31,17 @@ impl IO for Editor {
         self.y = 1;
         self.current_char = 1;
         self.current_line = 1;
+        self.modified = false;
 
         Ok(())
     }
 
     fn save(&mut self) -> std::io::Result<()> {
-        let file = File::create("test.txt")?;
+        if self.file_name == String::new() {
+            return Err(Error::new(ErrorKind::Other, "No file name set in editor"));
+        }
+
+        let file = File::create(&self.file_name)?;
         let mut buf = BufWriter::new(file);
 
         for line in self.buffer.iter() {
@@ -40,6 +49,8 @@ impl IO for Editor {
         }
 
         buf.flush()?;
+
+        self.modified = false;
 
         Ok(())
     }
