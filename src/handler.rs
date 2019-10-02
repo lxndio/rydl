@@ -80,7 +80,7 @@ impl Handler for Editor {
                         }
                     }
                     Key::Backspace => {
-                        if self.buffer.get_mut(self.current_line).unwrap().pop() == None {
+                        if self.buffer.get(self.current_line).unwrap() == &String::new() {
                             if self.current_line > 1 {
                                 self.buffer.remove(self.current_line);
                                 self.current_line -= 1;
@@ -88,6 +88,7 @@ impl Handler for Editor {
                                 self.move_cursor_eocl();
                             }
                         } else {
+                            self.buffer.get_mut(self.current_line).unwrap().remove(self.current_char - 2);
                             self.move_cursor_left();
                         }
                     }
