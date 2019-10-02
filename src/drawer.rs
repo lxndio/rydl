@@ -76,31 +76,22 @@ impl Drawer for Editor {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let mut y = 1;
 
-        let to = if self.buffer.len() - self.top_line >= usize::from(self.height) - 2 {
-            usize::from(self.height) - 2 - self.top_line
-        } else {
-            self.buffer.len()
+        let from = self.top_line;
+        let to = self.top_line
+            + cmp::min(
+                self.buffer.len() - self.top_line,
+                usize::from(self.height) - 4,
+            );
+
+        let x = match to.to_string().len() {
+            1 => 3,
+            2 => 2,
+            3 => 1,
+            _ => 1,
         };
 
-        for number in self.top_line..=to {
-            if self.ys_without_own_line.contains(&y) {
-                continue;
-            }
-
-            let x = match number.to_string().len() {
-                1 => 3,
-                2 => 2,
-                3 => 1,
-                _ => 1,
-            };
-
-            write!(
-                stdout,
-                "{}{}",
-                termion::cursor::Goto(x, y as u16), // TODO probably replace as with try_from()
-                number
-            )
-            .unwrap();
+        for number in from..=to {
+            write!(stdout, "{}{}", termion::cursor::Goto(x, y), number).unwrap();
 
             y += 1;
         }
@@ -113,10 +104,11 @@ impl Drawer for Editor {
         //self.ys_without_own_line = Vec::new();
 
         let from = self.top_line;
-        let to = self.top_line + cmp::min(
-            self.buffer.len() - self.top_line,
-            usize::from(self.height) - 4
-        );
+        let to = self.top_line
+            + cmp::min(
+                self.buffer.len() - self.top_line,
+                usize::from(self.height) - 4,
+            );
 
         for i in from..=to {
             let line = self.buffer.get(i).unwrap();
