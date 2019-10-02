@@ -165,7 +165,7 @@ impl Editor {
         .unwrap();
         stdout.flush().unwrap();
 
-        let mut command = String::new();
+        let mut cmd = String::new();
 
         for c in stdin.keys() {
             match c.unwrap() {
@@ -173,21 +173,21 @@ impl Editor {
                     break;
                 }
                 Key::Char(c) => {
-                    command.push(c);
+                    cmd.push(c);
 
                     write!(stdout, "{}", c).unwrap();
                     stdout.flush().unwrap();
                 }
                 Key::Backspace => {
-                    if !command.is_empty() {
-                        command.pop();
+                    if !cmd.is_empty() {
+                        cmd.pop();
 
                         write!(
                             stdout,
                             "{}{}:{}",
                             termion::clear::CurrentLine,
                             termion::cursor::Goto(1, self.height - 1),
-                            command
+                            cmd
                         )
                         .unwrap();
                         stdout.flush().unwrap();
@@ -200,11 +200,30 @@ impl Editor {
             }
         }
 
+        let cmd_parts: Vec<&str> = cmd.split_whitespace().collect();
+
         // TODO make commands scriptable
-        if command == "q" {
-            self.running = false;
-        } else if command == "w" {
-            self.save().expect("Could not save buffer to file");
+        match cmd_parts.len() {
+            1 => {
+                match cmd_parts[0] {
+                    "q" => {
+                        self.running = false;
+                    }
+                    "w" => {
+                        self.save().expect("Could not save buffer to file");
+                    }
+                    _ => {}
+                }
+            }
+            2 => {
+                match cmd_parts[0] {
+                    "r" => {
+                        self.load(String::from(cmd_parts[1])).expect("Could not load file to buffer");
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
         }
     }
 }
