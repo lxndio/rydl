@@ -227,14 +227,14 @@ impl Editor {
                 }
                 "e" => {
                     if self.file_name != String::new() {
-                        self.load().expect("Could not load file to buffer");                    
+                        self.load().expect("Could not load file to buffer");
                     } else {
                         self.show_error("No file name");
                     }
                 }
                 "w" => {
                     if self.file_name != String::new() {
-                        self.save().expect("Could not save buffer to file");                    
+                        self.save().expect("Could not save buffer to file");
                     } else {
                         self.show_error("No file name");
                     }
@@ -246,15 +246,13 @@ impl Editor {
                     // TODO add file existence check
                     self.file_name = String::from(cmd_parts[1]);
 
-                    self.load()
-                        .expect("Could not load file to buffer");
+                    self.load().expect("Could not load file to buffer");
                 }
                 "w" => {
                     // TODO add file existence check
                     self.file_name = String::from(cmd_parts[1]);
 
-                    self.save()
-                        .expect("Could not save buffer to file");
+                    self.save().expect("Could not save buffer to file");
                 }
                 _ => {}
             },
@@ -263,10 +261,7 @@ impl Editor {
     }
 
     pub fn show_error(&mut self, msg: &str) {
-        self.draw_bar_text(
-            String::from(msg),
-            color::Rgb(0xf4, 0x59, 0x05),
-        );
+        self.draw_bar_text(String::from(msg), color::Rgb(0xf4, 0x59, 0x05));
 
         stdout().into_raw_mode().unwrap().flush().unwrap();
     }
