@@ -6,7 +6,7 @@ use termion::{color, terminal_size};
 
 use crate::buffer::Buffer;
 use crate::drawer::Drawer;
-use crate::io::IO;
+use crate::handler::Handler;
 
 #[derive(PartialEq)]
 pub enum EditorMode {
@@ -212,52 +212,7 @@ impl Editor {
 
         let cmd_parts: Vec<&str> = cmd.split_whitespace().collect();
 
-        // TODO make commands scriptable
-        match cmd_parts.len() {
-            1 => match cmd_parts[0] {
-                "q" => {
-                    if !self.modified {
-                        self.running = false;
-                    } else {
-                        self.show_error("No write since last change (add ! to override)");
-                    }
-                }
-                "q!" => {
-                    self.running = false;
-                }
-                "e" => {
-                    if self.file_name != String::new() {
-                        self.load().expect("Could not load file to buffer");
-                    } else {
-                        self.show_error("No file name");
-                    }
-                }
-                "w" => {
-                    if self.file_name != String::new() {
-                        self.save().expect("Could not save buffer to file");
-                    } else {
-                        self.show_error("No file name");
-                    }
-                }
-                _ => {}
-            },
-            2 => match cmd_parts[0] {
-                "e" => {
-                    // TODO add file existence check
-                    self.file_name = String::from(cmd_parts[1]);
-
-                    self.load().expect("Could not load file to buffer");
-                }
-                "w" => {
-                    // TODO add file existence check
-                    self.file_name = String::from(cmd_parts[1]);
-
-                    self.save().expect("Could not save buffer to file");
-                }
-                _ => {}
-            },
-            _ => {}
-        }
+        self.handle_command(cmd_parts);
     }
 
     pub fn show_error(&mut self, msg: &str) {
