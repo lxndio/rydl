@@ -204,25 +204,22 @@ impl Editor {
 
         // TODO make commands scriptable
         match cmd_parts.len() {
-            1 => {
-                match cmd_parts[0] {
-                    "q" => {
-                        self.running = false;
-                    }
-                    "w" => {
-                        self.save().expect("Could not save buffer to file");
-                    }
-                    _ => {}
+            1 => match cmd_parts[0] {
+                "q" => {
+                    self.running = false;
                 }
-            }
-            2 => {
-                match cmd_parts[0] {
-                    "r" => {
-                        self.load(String::from(cmd_parts[1])).expect("Could not load file to buffer");
-                    }
-                    _ => {}
+                "w" => {
+                    self.save().expect("Could not save buffer to file");
                 }
-            }
+                _ => {}
+            },
+            2 => match cmd_parts[0] {
+                "r" => {
+                    self.load(String::from(cmd_parts[1]))
+                        .expect("Could not load file to buffer");
+                }
+                _ => {}
+            },
             _ => {}
         }
     }

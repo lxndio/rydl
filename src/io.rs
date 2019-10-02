@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufWriter, Write, BufReader, BufRead};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 
 use crate::buffer::Buffer;
 use crate::editor::Editor;

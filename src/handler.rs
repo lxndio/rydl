@@ -88,7 +88,10 @@ impl Handler for Editor {
                                 self.move_cursor_eocl();
                             }
                         } else {
-                            self.buffer.get_mut(self.current_line).unwrap().remove(self.current_char - 2);
+                            self.buffer
+                                .get_mut(self.current_line)
+                                .unwrap()
+                                .remove(self.current_char - 2);
                             self.move_cursor_left();
                         }
                     }
