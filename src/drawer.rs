@@ -9,6 +9,8 @@ use crate::util::split_string_every;
 pub trait Drawer {
     fn draw(&mut self);
     fn draw_bar(&mut self);
+    fn draw_bar_text(&mut self, text: String, bar_color: termion::color::Rgb);
+    fn draw_bar_empty(&mut self);
     fn draw_line_numbers(&mut self);
     fn draw_buffer(&mut self);
     fn draw_cursor(&mut self);
@@ -16,7 +18,11 @@ pub trait Drawer {
 
 impl Drawer for Editor {
     fn draw(&mut self) {
-        self.draw_bar();
+        if self.keep_bar > 0 {
+            self.keep_bar -= 1;
+        } else {
+            self.draw_bar();
+        }
         self.draw_buffer();
         self.draw_line_numbers();
         self.draw_cursor();
@@ -33,7 +39,7 @@ impl Drawer for Editor {
         write!(
             stdout,
             "{}{}{}",
-            color::Bg(color::White),
+            color::Bg(color::Rgb(0xcb, 0xb5, 0x25)),
             termion::cursor::Goto(1, self.height - 1),
             output
         )
@@ -72,6 +78,68 @@ impl Drawer for Editor {
         .unwrap();
     }
 
+    fn draw_bar_text(&mut self, text: String, bar_color: termion::color::Rgb) {
+        let mut stdout = stdout().into_raw_mode().unwrap();
+
+        let output = " ".repeat(self.width as usize);
+
+        // Draw bar
+        write!(
+            stdout,
+            "{}{}{}",
+            color::Bg(bar_color),
+            termion::cursor::Goto(1, self.height - 1),
+            output
+        )
+        .unwrap();
+
+        // Draw text
+        write!(
+            stdout,
+            "{}{}{}",
+            color::Fg(color::Black),
+            termion::cursor::Goto(2, self.height - 1),
+            text
+        )
+        .unwrap();
+
+        write!(
+            stdout,
+            "{}{}{}",
+            color::Fg(color::Reset),
+            color::Bg(color::Reset),
+            termion::cursor::Goto(self.x, self.y)
+        )
+        .unwrap();
+
+        self.keep_bar = 1;
+    }
+
+    fn draw_bar_empty(&mut self) {
+        let mut stdout = stdout().into_raw_mode().unwrap();
+
+        let output = " ".repeat(self.width as usize);
+
+        // Draw bar
+        write!(
+            stdout,
+            "{}{}{}",
+            color::Bg(color::Rgb(0xcb, 0xb5, 0x25)),
+            termion::cursor::Goto(1, self.height - 1),
+            output
+        )
+        .unwrap();
+
+        write!(
+            stdout,
+            "{}{}{}",
+            color::Fg(color::Reset),
+            color::Bg(color::Reset),
+            termion::cursor::Goto(self.x, self.y)
+        )
+        .unwrap();
+    }
+
     fn draw_line_numbers(&mut self) {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let mut y = 1;
@@ -91,7 +159,14 @@ impl Drawer for Editor {
         };
 
         for number in from..=to {
-            write!(stdout, "{}{}", termion::cursor::Goto(x, y), number).unwrap();
+            write!(
+                stdout,
+                "{}{}{}",
+                color::Fg(color::Rgb(0xfb, 0x92, 0x24)),
+                termion::cursor::Goto(x, y),
+                number
+            )
+            .unwrap();
 
             y += 1;
         }

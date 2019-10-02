@@ -78,6 +78,8 @@ impl Handler for Editor {
 
                             self.move_cursor_right();
                         }
+
+                        self.modified = true;
                     }
                     Key::Backspace => {
                         if self.buffer.get(self.current_line).unwrap() == &String::new() {
@@ -94,6 +96,8 @@ impl Handler for Editor {
                                 .remove(self.current_char - 2);
                             self.move_cursor_left();
                         }
+
+                        self.modified = true;
                     }
                     Key::Esc => {
                         self.mode = EditorMode::Command;

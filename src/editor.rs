@@ -40,6 +40,8 @@ pub struct Editor {
     pub mode: EditorMode,
 
     pub running: bool,
+    pub modified: bool,
+    pub keep_bar: usize,
 }
 
 impl Editor {
@@ -50,7 +52,7 @@ impl Editor {
             width,
             height,
 
-            buffer: Buffer::new(),
+            buffer: Buffer::new(true),
             line: String::new(),
             current_line: 1,
             current_char: 1,
@@ -63,6 +65,8 @@ impl Editor {
             mode: EditorMode::Command,
 
             running: true,
+            modified: false,
+            keep_bar: 0,
         }
     }
 
@@ -113,7 +117,7 @@ impl Editor {
     }
 
     pub fn move_cursor_down(&mut self) {
-        if self.current_line < self.buffer.len() - 1 {
+        if self.current_line < self.buffer.len() {
             self.current_line += 1;
 
             if self.y <= self.height - 4 {
@@ -155,11 +159,13 @@ impl Editor {
         let stdin = stdin();
         let mut stdout = stdout().into_raw_mode().unwrap();
 
+        self.draw_bar_empty();
+
         write!(
             stdout,
             "{}{}{}:",
             color::Fg(color::Black),
-            color::Bg(color::White),
+            color::Bg(color::Rgb(0xcb, 0xb5, 0x25)),
             termion::cursor::Goto(1, self.height - 1)
         )
         .unwrap();
@@ -206,6 +212,17 @@ impl Editor {
         match cmd_parts.len() {
             1 => match cmd_parts[0] {
                 "q" => {
+                    if !self.modified {
+                        self.running = false;
+                    } else {
+                        self.draw_bar_text(
+                            String::from("No write since last change (add ! to override)"),
+                            color::Rgb(0xf4, 0x59, 0x05),
+                        );
+                        stdout.flush().unwrap();
+                    }
+                }
+                "q!" => {
                     self.running = false;
                 }
                 "w" => {

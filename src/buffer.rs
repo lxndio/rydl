@@ -3,10 +3,12 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new() -> Buffer {
+    pub fn new(init: bool) -> Buffer {
         let mut buffer = Buffer { lines: Vec::new() };
 
-        buffer.push(String::new()); // Add one line to start with
+        if init {
+            buffer.push(String::new());
+        } // Add one line to start with
 
         buffer
     }
@@ -100,7 +102,7 @@ mod tests {
 
     #[test]
     fn replace_line_test() {
-        let mut buffer = Buffer::new();
+        let mut buffer = Buffer::new(true);
 
         buffer.push(String::from("Line 1"));
         buffer.push(String::from("Line 2"));

@@ -11,7 +11,7 @@ pub trait IO {
 
 impl IO for Editor {
     fn load(&mut self, file_name: String) -> std::io::Result<()> {
-        self.buffer = Buffer::new();
+        self.buffer = Buffer::new(false);
 
         let file = File::open(file_name)?;
         let buf = BufReader::new(file);
