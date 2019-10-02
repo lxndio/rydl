@@ -23,6 +23,7 @@ impl EditorMode {
     }
 }
 
+/// A rydl instance, this is created on program start and takes care of everything from there one
 pub struct Editor {
     pub width: u16,
     pub height: u16,
@@ -47,6 +48,7 @@ pub struct Editor {
 }
 
 impl Editor {
+    /// Creates a new rydl instance.
     pub fn new() -> Editor {
         let (width, height) = terminal_size().expect("Could not get terminal size.");
 
@@ -74,6 +76,7 @@ impl Editor {
         }
     }
 
+    /// Initializes a rydl instance, i.e. it clears the screen, resets the cursor and calls the drawer once.
     pub fn init(&mut self) {
         self.x = self.start_x;
 
@@ -88,6 +91,7 @@ impl Editor {
         self.draw();
     }
 
+    /// Used to move the cursor to the left if possible (both the on-screen and the internal buffer cursor).
     pub fn move_cursor_left(&mut self) {
         if self.current_char > 1 {
             self.current_char -= 1;
@@ -95,6 +99,7 @@ impl Editor {
         }
     }
 
+    /// Used to move the cursor to the right if possible (both the on-screen and the internal buffer cursor).
     pub fn move_cursor_right(&mut self) {
         if self.current_char <= self.buffer.get(self.current_line).unwrap().len() {
             self.current_char += 1;
@@ -102,6 +107,7 @@ impl Editor {
         }
     }
 
+    /// Used to move the cursor up if possible (both the on-screen and the internal buffer cursor).
     pub fn move_cursor_up(&mut self) {
         if self.current_line > 1 {
             self.current_line -= 1;
@@ -120,6 +126,7 @@ impl Editor {
         }
     }
 
+    /// Used to move the cursor down if possible (both the on-screen and the internal buffer cursor).
     pub fn move_cursor_down(&mut self) {
         if self.current_line < self.buffer.len() {
             self.current_line += 1;
@@ -140,6 +147,7 @@ impl Editor {
         }
     }
 
+    /// Used to move the cursor to a new line (both the on-screen and the internal buffer cursor).
     pub fn move_cursor_new_line(&mut self) {
         // TODO current_line and scrolling handling
         if self.y >= self.height - 3 {
@@ -152,6 +160,7 @@ impl Editor {
         }
     }
 
+    /// Used to move the cursor to the end of the current line (both the on-screen and the internal buffer cursor).
     pub fn move_cursor_eocl(&mut self) {
         // TODO make + 4 variable depending on the length of the line numbers
         self.current_char = self.buffer.get(self.current_line).unwrap().len() + 1;
