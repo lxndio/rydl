@@ -23,7 +23,7 @@ impl EditorMode {
     }
 }
 
-/// A rydl instance, this is created on program start and takes care of everything from there one
+/// A rydl instance, this is created on program start and takes care of everything from there on
 pub struct Editor {
     pub width: u16,
     pub height: u16,
