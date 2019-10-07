@@ -32,7 +32,7 @@ pub struct Editor {
     pub line: String,
     pub current_line: usize,
     pub current_char: usize,
-    pub top_line: usize,
+    top_line: usize,
     pub ys_without_own_line: Vec<u16>,
 
     pub x: u16,
@@ -44,6 +44,7 @@ pub struct Editor {
 
     pub running: bool,
     pub modified: bool,
+    pub top_line_changed: bool,
     pub keep_bar: usize,
 }
 
@@ -72,6 +73,7 @@ impl Editor {
 
             running: true,
             modified: false,
+            top_line_changed: true,
             keep_bar: 0,
         }
     }
@@ -89,6 +91,15 @@ impl Editor {
         )
         .unwrap();
         self.draw();
+    }
+
+    pub fn set_top_line(&mut self, top_line: usize) {
+        self.top_line = top_line;
+        self.top_line_changed = true;
+    }
+
+    pub fn top_line(&self) -> usize {
+        self.top_line
     }
 
     /// Used to move the cursor to the left if possible (both the on-screen and the internal buffer cursor).
@@ -115,7 +126,7 @@ impl Editor {
             if self.y > 1 {
                 self.y -= 1;
             } else {
-                self.top_line -= 1;
+                self.set_top_line(self.top_line() - 1);
             }
 
             if self.current_char > self.buffer.get(self.current_line).unwrap().len() {
@@ -134,7 +145,7 @@ impl Editor {
             if self.y <= self.height - 4 {
                 self.y += 1;
             } else {
-                self.top_line += 1;
+                self.set_top_line(self.top_line() + 1);
             }
 
             if self.buffer.get(self.current_line) != None
@@ -152,7 +163,7 @@ impl Editor {
         // TODO current_line and scrolling handling
         if self.y >= self.height - 3 {
             self.x = self.start_x;
-            self.top_line += 1;
+            self.set_top_line(self.top_line() + 1);
         } else {
             self.current_char = 1;
             self.x = self.start_x;

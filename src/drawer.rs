@@ -18,16 +18,28 @@ pub trait Drawer {
 
 impl Drawer for Editor {
     fn draw(&mut self) {
+        let mut stdout = stdout().into_raw_mode().unwrap();
+
+        write!(stdout, "{}", termion::cursor::Hide).unwrap();
+
         if self.keep_bar > 0 {
             self.keep_bar -= 1;
         } else {
             self.draw_bar();
         }
+
         self.draw_buffer();
-        self.draw_line_numbers();
+
+        if self.top_line_changed || self.top_line() == 1 {
+            self.draw_line_numbers();
+            self.top_line_changed = false;
+        }
+
         self.draw_cursor();
 
-        stdout().into_raw_mode().unwrap().flush().unwrap();
+        write!(stdout, "{}", termion::cursor::Show).unwrap();
+
+        stdout.flush().unwrap();
     }
 
     fn draw_bar(&mut self) {
@@ -144,10 +156,10 @@ impl Drawer for Editor {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let mut y = 1;
 
-        let from = self.top_line;
-        let to = self.top_line
+        let from = self.top_line();
+        let to = self.top_line()
             + cmp::min(
-                self.buffer.len() - self.top_line,
+                self.buffer.len() - self.top_line(),
                 usize::from(self.height) - 4,
             );
 
@@ -161,8 +173,9 @@ impl Drawer for Editor {
         for number in from..=to {
             write!(
                 stdout,
-                "{}{}{}",
+                "{}{}  {}{}",
                 color::Fg(color::Rgb(0xfb, 0x92, 0x24)),
+                termion::cursor::Goto(x, y),
                 termion::cursor::Goto(x, y),
                 number
             )
@@ -178,10 +191,10 @@ impl Drawer for Editor {
 
         //self.ys_without_own_line = Vec::new();
 
-        let from = self.top_line;
-        let to = self.top_line
+        let from = self.top_line();
+        let to = self.top_line()
             + cmp::min(
-                self.buffer.len() - self.top_line,
+                self.buffer.len() - self.top_line(),
                 usize::from(self.height) - 4,
             );
 
@@ -192,7 +205,7 @@ impl Drawer for Editor {
                 stdout,
                 "{}{}{}",
                 termion::cursor::Goto(self.start_x, y),
-                termion::clear::CurrentLine,
+                termion::clear::UntilNewline,
                 line
             )
             .unwrap();
