@@ -162,20 +162,17 @@ impl Drawer for Editor {
                 usize::from(self.height) - 4,
             );
 
-        let x = match to.to_string().len() {
-            1 => 3,
-            2 => 2,
-            3 => 1,
-            _ => 1,
-        };
-
         for number in from..=to {
+            let mut number = number.to_string();
+            while number.len() < self.start_x() as usize - 1 {
+                number.insert(0, ' ');
+            }
+
             write!(
                 stdout,
-                "{}{}  {}{}",
+                "{}{}{}",
                 color::Fg(color::Rgb(0xfb, 0x92, 0x24)),
-                termion::cursor::Goto(x, y),
-                termion::cursor::Goto(x, y),
+                termion::cursor::Goto(1, y),
                 number
             )
             .unwrap();
@@ -203,7 +200,7 @@ impl Drawer for Editor {
             write!(
                 stdout,
                 "{}{}{}",
-                termion::cursor::Goto(self.start_x, y),
+                termion::cursor::Goto(self.start_x(), y),
                 termion::clear::UntilNewline,
                 line
             )

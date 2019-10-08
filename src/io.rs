@@ -27,7 +27,7 @@ impl IO for Editor {
             self.buffer.push(line);
         }
 
-        self.x = self.start_x;
+        self.x = self.start_x();
         self.y = 1;
         self.current_char = 1;
         self.current_line = 1;
