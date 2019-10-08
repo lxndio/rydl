@@ -198,23 +198,40 @@ impl Drawer for Editor {
             );
 
         for i in from..=to {
-            let mut line = self.buffer.get(i).unwrap();
+            let line = self.buffer.get(i).unwrap();
 
             // Replace tabs with spaces for printing
-            line.replace(
+            /*let line = line.replace(
                 '\t',
                 std::iter::repeat(" ")
                     .take(self.settings.tab_width)
                     .collect::<String>()
                     .as_str(),
-            );
+            );*/
+
+            let mut new_line = String::new();
+            for (i, c) in line.chars().enumerate() {
+                match c {
+                    '\t' => {
+                        new_line.push_str(
+                            std::iter::repeat(" ")
+                                .take(self.settings.tab_width - (i % self.settings.tab_width))
+                                .collect::<String>()
+                                .as_str(),
+                        );
+                    }
+                    _ => {
+                        new_line.push(c);
+                    }
+                }
+            }
 
             write!(
                 stdout,
                 "{}{}{}",
                 termion::cursor::Goto(self.start_x, y),
                 termion::clear::UntilNewline,
-                line
+                new_line
             )
             .unwrap();
 

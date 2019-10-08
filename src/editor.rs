@@ -121,6 +121,7 @@ impl Editor {
         if self.current_char <= self.buffer.get(self.current_line).unwrap().len() {
             self.current_char += 1;
 
+            // If the character to move over is a tab, we need to advance the cursor by multiple single width chars
             if c == '\t' {
                 for i in 0..=self.settings.tab_width {
                     if (self.x as usize + i) % self.settings.tab_width == 0 {
