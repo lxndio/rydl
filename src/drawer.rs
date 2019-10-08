@@ -163,7 +163,6 @@ impl Drawer for Editor {
             );
 
         for number in from..=to {
-            let x = self.start_x() - number.to_string().len() as u16 - 1;
             let mut number = number.to_string();
             while number.len() < self.start_x() as usize - 1 {
                 number.insert(0, ' ');

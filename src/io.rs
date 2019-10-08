@@ -45,7 +45,7 @@ impl IO for Editor {
         let mut buf = BufWriter::new(file);
 
         for line in self.buffer.iter() {
-            write!(buf, "{}\n", line)?;
+            writeln!(buf, "{}", line)?;
         }
 
         buf.flush()?;

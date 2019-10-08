@@ -80,6 +80,7 @@ impl Editor {
     pub fn init(&mut self) {
         self.x = self.start_x();
 
+        #[allow(clippy::explicit_write)]
         write!(
             stdout(),
             "{}{}{}",
