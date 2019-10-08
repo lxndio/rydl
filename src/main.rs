@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 extern crate termion;
 
 mod buffer;

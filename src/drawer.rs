@@ -4,7 +4,6 @@ use termion::color;
 use termion::raw::IntoRawMode;
 
 use crate::editor::{Editor, EditorMode};
-use crate::util::split_string_every;
 
 pub trait Drawer {
     fn draw(&mut self);
