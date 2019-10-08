@@ -36,7 +36,6 @@ pub struct Editor {
     pub ys_without_own_line: Vec<u16>,
 
     pub x: u16,
-    pub start_x: u16,
     pub y: u16,
     pub mode: EditorMode,
 
@@ -65,7 +64,6 @@ impl Editor {
             ys_without_own_line: Vec::new(),
 
             x: 1,
-            start_x: 5,
             y: 1,
             mode: EditorMode::Command,
 
@@ -80,7 +78,7 @@ impl Editor {
 
     /// Initializes a rydl instance, i.e. it clears the screen, resets the cursor and calls the drawer once.
     pub fn init(&mut self) {
-        self.x = self.start_x;
+        self.x = self.start_x();
 
         write!(
             stdout(),
@@ -162,11 +160,11 @@ impl Editor {
     pub fn move_cursor_new_line(&mut self) {
         // TODO current_line and scrolling handling
         if self.y >= self.height - 3 {
-            self.x = self.start_x;
+            self.x = self.start_x();
             self.set_top_line(self.top_line() + 1);
         } else {
             self.current_char = 1;
-            self.x = self.start_x;
+            self.x = self.start_x();
             self.y += 1;
         }
     }
@@ -233,6 +231,13 @@ impl Editor {
         let cmd_parts: Vec<&str> = cmd.split_whitespace().collect();
 
         self.handle_command(cmd_parts);
+    }
+
+
+    /// Find out the x-position in the terminal where the first character of
+    /// a line should be printed.
+    pub fn start_x(&self) -> u16 {
+        (self.buffer.len() as f32 + 1.).log10() as u16 + 3
     }
 
     pub fn show_error(&mut self, msg: &str) {
