@@ -6,6 +6,7 @@ use termion::raw::IntoRawMode;
 use crate::drawer::Drawer;
 use crate::editor::{Editor, EditorMode};
 use crate::io::IO;
+use crate::lua_handler::LuaHandler;
 
 pub trait Handler {
     fn handle(&mut self);
@@ -138,6 +139,9 @@ impl Handler for Editor {
                     } else {
                         self.show_error("No file name");
                     }
+                }
+                "lua" => {
+                    self.exec_cmd(String::from("test"), Vec::new());
                 }
                 _ => {}
             },
