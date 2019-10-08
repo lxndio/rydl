@@ -198,7 +198,16 @@ impl Drawer for Editor {
             );
 
         for i in from..=to {
-            let line = self.buffer.get(i).unwrap();
+            let mut line = self.buffer.get(i).unwrap();
+
+            // Replace tabs with spaces for printing
+            line.replace(
+                '\t',
+                std::iter::repeat(" ")
+                    .take(self.settings.tab_width)
+                    .collect::<String>()
+                    .as_str(),
+            );
 
             write!(
                 stdout,

@@ -44,7 +44,7 @@ impl Handler for Editor {
                         self.move_cursor_up();
                     }
                     Key::Char('l') => {
-                        self.move_cursor_right();
+                        self.move_cursor_right('.'); // TODO replace '.' with current char (under cursor)
                     }
                     Key::Char(':') => {
                         self.read_command();
@@ -78,7 +78,7 @@ impl Handler for Editor {
                                 .unwrap()
                                 .insert(self.current_char - 1, c);
 
-                            self.move_cursor_right();
+                            self.move_cursor_right(c);
                         }
 
                         self.modified = true;

@@ -7,6 +7,7 @@ use termion::{color, terminal_size};
 use crate::buffer::Buffer;
 use crate::drawer::Drawer;
 use crate::handler::Handler;
+use crate::settings::Settings;
 
 #[derive(PartialEq)]
 pub enum EditorMode {
@@ -42,6 +43,8 @@ pub struct Editor {
 
     pub file_name: String,
 
+    pub settings: Settings,
+
     pub running: bool,
     pub modified: bool,
     pub top_line_changed: bool,
@@ -70,6 +73,8 @@ impl Editor {
             mode: EditorMode::Command,
 
             file_name: String::new(),
+
+            settings: Settings::new(),
 
             running: true,
             modified: false,
@@ -112,10 +117,20 @@ impl Editor {
     }
 
     /// Used to move the cursor to the right if possible (both the on-screen and the internal buffer cursor).
-    pub fn move_cursor_right(&mut self) {
+    pub fn move_cursor_right(&mut self, c: char) {
         if self.current_char <= self.buffer.get(self.current_line).unwrap().len() {
             self.current_char += 1;
-            self.x += 1;
+
+            if c == '\t' {
+                for i in 0..=self.settings.tab_width {
+                    if (self.x as usize + i) % self.settings.tab_width == 0 {
+                        self.x += i as u16 + 1;
+                        break;
+                    }
+                }
+            } else {
+                self.x += 1;
+            }
         }
     }
 
