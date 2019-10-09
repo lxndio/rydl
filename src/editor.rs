@@ -138,12 +138,7 @@ impl Editor {
 
             // If the character to move over is a tab, we need to advance the cursor by multiple single width chars
             if c == '\t' {
-                for i in 0..=self.settings.tab_width {
-                    if (self.x as usize + i) % self.settings.tab_width == 0 {
-                        self.x += i as u16 + 1;
-                        break;
-                    }
-                }
+                self.x += (self.settings.tab_width - ((self.x as usize - 4) % self.settings.tab_width) + 1) as u16;
             } else {
                 self.x += 1;
             }

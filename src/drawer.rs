@@ -201,14 +201,6 @@ impl Drawer for Editor {
             let line = self.buffer.get(i).unwrap();
 
             // Replace tabs with spaces for printing
-            /*let line = line.replace(
-                '\t',
-                std::iter::repeat(" ")
-                    .take(self.settings.tab_width)
-                    .collect::<String>()
-                    .as_str(),
-            );*/
-
             let mut new_line = String::new();
             for (i, c) in line.chars().enumerate() {
                 match c {
