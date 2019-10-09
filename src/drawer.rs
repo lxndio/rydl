@@ -164,7 +164,7 @@ impl Drawer for Editor {
 
         for number in from..=to {
             let mut number = number.to_string();
-            while number.len() < self.start_x() as usize - 1 {
+            while number.len() < self.start_x() as usize - 2 {
                 number.insert(0, ' ');
             }
 
