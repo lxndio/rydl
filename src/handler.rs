@@ -1,4 +1,5 @@
 use std::io::{stdin, stdout, Write};
+use std::iter::FromIterator;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -73,10 +74,22 @@ impl Handler for Editor {
                             self.move_cursor_new_line();
                         } else {
                             // unwrap should be save because current_line should always be in range per invariant
-                            self.buffer
-                                .get_mut(self.current_line)
-                                .unwrap()
-                                .insert(self.current_char - 1, c);
+                            //self.buffer
+                            //    .get_mut(self.current_line)
+                            //    .unwrap()
+                            //    .insert(self.current_char - 1, c);
+
+                            if self.current_char == self.buffer.get(self.current_line).unwrap().len() + 1{
+                                // At the end of the line, the character can simply be appended
+                                self.buffer.get_mut(self.current_line).unwrap().push(c);
+                            } else {
+                                // The character has to be inserted somewhere in between.
+                                // Cannot index directly, because Unicode chars can be multiple
+                                // bytes long.
+                                let current_char = self.current_char;
+                                let buffer = self.buffer.get_mut(self.current_line).unwrap();
+                                *buffer = String::from_iter(buffer.char_indices().flat_map(|(i, cur)| if i == current_char { vec![c, cur] } else { vec![cur] }).collect::<Vec<char>>());
+                            }
 
                             self.move_cursor_right();
                         }
