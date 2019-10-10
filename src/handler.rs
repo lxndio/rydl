@@ -79,7 +79,7 @@ impl Handler for Editor {
                             //    .unwrap()
                             //    .insert(self.current_char - 1, c);
 
-                            if self.current_char == self.buffer.get(self.current_line).unwrap().len() + 1{
+                            if self.current_char == self.buffer.get(self.current_line).unwrap().len() + 1 {
                                 // At the end of the line, the character can simply be appended
                                 self.buffer.get_mut(self.current_line).unwrap().push(c);
                             } else {
@@ -88,7 +88,7 @@ impl Handler for Editor {
                                 // bytes long.
                                 let current_char = self.current_char;
                                 let buffer = self.buffer.get_mut(self.current_line).unwrap();
-                                *buffer = String::from_iter(buffer.char_indices().flat_map(|(i, cur)| if i == current_char { vec![c, cur] } else { vec![cur] }).collect::<Vec<char>>());
+                                *buffer = String::from_iter(buffer.char_indices().flat_map(|(i, cur)| if i == current_char - 1 { vec![c, cur] } else { vec![cur] }).collect::<Vec<char>>());
                             }
 
                             self.move_cursor_right();
@@ -105,10 +105,15 @@ impl Handler for Editor {
                                 self.move_cursor_eocl();
                             }
                         } else {
-                            self.buffer
-                                .get_mut(self.current_line)
-                                .unwrap()
-                                .remove(self.current_char - 2);
+                            //self.buffer
+                            //    .get_mut(self.current_line)
+                            //    .unwrap()
+                            //    .remove(self.current_char - 2);
+
+                            let current_char = self.current_char;
+                            let buffer = self.buffer.get_mut(self.current_line).unwrap();
+                            *buffer = buffer.char_indices().filter_map(|(i, c)| if i != current_char - 2 { Some(c) } else { None }).collect();
+
                             self.move_cursor_left();
                         }
 
