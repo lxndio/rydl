@@ -35,7 +35,7 @@ impl Handler for Editor {
                         self.draw();
                     }
                     Key::Char('h') => {
-                        self.move_cursor_left();
+                        self.move_cursor_left('.'); // TODO see below
                     }
                     Key::Char('j') => {
                         self.move_cursor_down();
@@ -96,9 +96,8 @@ impl Handler for Editor {
                                 .get_mut(self.current_line)
                                 .unwrap()
                                 .remove(self.current_char - 2);
-                            
-                            self.move_cursor_left();
-                            //self.move_cursor_left_for_char(current_char);
+
+                            self.move_cursor_left('.'); // TODO
                         }
 
                         self.modified = true;

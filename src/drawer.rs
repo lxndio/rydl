@@ -71,11 +71,12 @@ impl Drawer for Editor {
         // Draw column and row
         write!(
             stdout,
-            "{}{}{},{}",
+            "{}{}{},{},{}",
             color::Fg(color::Black),
             termion::cursor::Goto(self.width - 10, self.height - 1),
             self.current_line,
             self.current_char,
+            self.x
         )
         .unwrap();
 

@@ -109,52 +109,32 @@ impl Editor {
     }
 
     /// Used to move the cursor to the left if possible (both the on-screen and the internal buffer cursor).
-    pub fn move_cursor_left(&mut self) {
-        if self.current_char > 1 {
-            self.current_char -= 1;
-            self.x -= 1;
-        }
-    }
+    pub fn move_cursor_left(&mut self, c: char) {
+        if self.current_char > 1 {            
+            // If the character to move over is a tab, we need to set back the cursor by multiple single width chars
+            if c == '\t' {
+                let sub = (self.settings.tab_width - (self.current_char % self.settings.tab_width) + 1) as u16;
+                self.x -= if sub != 5 { sub } else { 1 };
+            } else {
+                self.x -= 1;
+            }
 
-    /// Used to move the cursor to the left if possible (both the on-screen and the internal buffer cursor).
-    /// In comparsion to move_cursor_left() which only moves the cursor to the right by one char width, this
-    /// can also move the cursor further (if for example a tab is entered).
-    pub fn move_cursor_left_for_char(&mut self, c: char) {
-        let sub_x: u16 = match c {
-                '\t' => 3,
-                _ => 1,
-            };
-
-        if self.current_char > sub_x as usize {
             self.current_char -= 1;
-            self.x -= sub_x;
         }
     }
 
     /// Used to move the cursor to the right if possible (both the on-screen and the internal buffer cursor).
     pub fn move_cursor_right(&mut self, c: char) {
         if self.current_char <= self.buffer.get(self.current_line).unwrap().len() {
-            self.current_char += 1;
-
             // If the character to move over is a tab, we need to advance the cursor by multiple single width chars
             if c == '\t' {
-                self.x += (self.settings.tab_width - ((self.x as usize - 4) % self.settings.tab_width) + 1) as u16;
+                let add = (self.settings.tab_width - (self.current_char % self.settings.tab_width) + 1) as u16;
+                self.x += if add != 5 { add } else { 1 };
             } else {
                 self.x += 1;
             }
-        }
-    }
 
-    /// Used to move the cursor to the right if possible (both the on-screen and the internal buffer cursor).
-    /// In comparsion to move_cursor_right() which only moves the cursor to the right by one char width, this
-    /// can also move the cursor further (if for example a tab is entered).
-    pub fn move_cursor_right_for_char(&mut self, c: char) {
-        if self.current_char <= self.buffer.get(self.current_line).unwrap().len() {
             self.current_char += 1;
-            self.x += match c {
-                '\t' => 3,
-                _ => 1,
-            };
         }
     }
 
