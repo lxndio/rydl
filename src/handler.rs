@@ -1,12 +1,11 @@
 use std::io::{stdin, stdout, Write};
-use std::iter::FromIterator;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::drawer::Drawer;
-use crate::editor::{Editor, EditorMode};
+use crate::editor::{Editor, Mode as EditorMode};
 use crate::io::IO;
 
 pub trait Handler {
@@ -61,7 +60,7 @@ impl Handler for Editor {
                 match c.unwrap() {
                     Key::Char(c) => {
                         if c == '\n' {
-                            // Get the part of the current line that is right to the cursor and
+                            // Get the part of the current line that is ri::iter::FromIterator;ght to the cursor and
                             // has to go to the next line
                             let to_next_line = self
                                 .buffer

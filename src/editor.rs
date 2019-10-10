@@ -9,16 +9,16 @@ use crate::drawer::Drawer;
 use crate::handler::Handler;
 
 #[derive(PartialEq)]
-pub enum EditorMode {
+pub enum Mode {
     Command,
     Insert,
 }
 
-impl EditorMode {
+impl Mode {
     pub fn name(&self) -> String {
         match *self {
-            EditorMode::Command => String::from("COMMAND"),
-            EditorMode::Insert => String::from("INSERT"),
+            Self::Command => String::from("COMMAND"),
+            Self::Insert => String::from("INSERT"),
         }
     }
 }
@@ -37,7 +37,7 @@ pub struct Editor {
 
     pub x: u16,
     pub y: u16,
-    pub mode: EditorMode,
+    pub mode: Mode,
 
     pub file_name: String,
 
@@ -49,10 +49,10 @@ pub struct Editor {
 
 impl Editor {
     /// Creates a new rydl instance.
-    pub fn new() -> Editor {
+    pub fn new() -> Self {
         let (width, height) = terminal_size().expect("Could not get terminal size.");
 
-        Editor {
+        Self {
             width,
             height,
 
@@ -65,7 +65,7 @@ impl Editor {
 
             x: 1,
             y: 1,
-            mode: EditorMode::Command,
+            mode: Mode::Command,
 
             file_name: String::new(),
 

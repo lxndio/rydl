@@ -3,7 +3,7 @@ use std::io::{stdout, Write};
 use termion::color;
 use termion::raw::IntoRawMode;
 
-use crate::editor::{Editor, EditorMode};
+use crate::editor::{Editor, Mode as EditorMode};
 
 pub trait Drawer {
     fn draw(&mut self);
