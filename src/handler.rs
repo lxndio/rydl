@@ -73,12 +73,6 @@ impl Handler for Editor {
                             self.current_line += 1;
                             self.move_cursor_new_line();
                         } else {
-                            // unwrap should be save because current_line should always be in range per invariant
-                            //self.buffer
-                            //    .get_mut(self.current_line)
-                            //    .unwrap()
-                            //    .insert(self.current_char - 1, c);
-
                             if self.current_char == self.buffer.get(self.current_line).unwrap().len() + 1 {
                                 // At the end of the line, the character can simply be appended
                                 self.buffer.get_mut(self.current_line).unwrap().push(c);
@@ -105,11 +99,6 @@ impl Handler for Editor {
                                 self.move_cursor_eocl();
                             }
                         } else {
-                            //self.buffer
-                            //    .get_mut(self.current_line)
-                            //    .unwrap()
-                            //    .remove(self.current_char - 2);
-
                             let current_char = self.current_char;
                             let buffer = self.buffer.get_mut(self.current_line).unwrap();
                             *buffer = buffer.char_indices().filter_map(|(i, c)| if i != current_char - 2 { Some(c) } else { None }).collect();
