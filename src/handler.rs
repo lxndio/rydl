@@ -3,6 +3,7 @@ use std::iter::FromIterator;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
+use unicode_segmentation::UnicodeSegmentation;
 
 use crate::drawer::Drawer;
 use crate::editor::{Editor, EditorMode};
@@ -77,12 +78,19 @@ impl Handler for Editor {
                                 // At the end of the line, the character can simply be appended
                                 self.buffer.get_mut(self.current_line).unwrap().push(c);
                             } else {
-                                // The character has to be inserted somewhere in between.
-                                // Cannot index directly, because Unicode chars can be multiple
-                                // bytes long.
-                                let current_char = self.current_char;
-                                let buffer = self.buffer.get_mut(self.current_line).unwrap();
-                                *buffer = String::from_iter(buffer.char_indices().flat_map(|(i, cur)| if i == current_char - 1 { vec![c, cur] } else { vec![cur] }).collect::<Vec<char>>());
+                                // Find the correct place to insert the character. Seperated by
+                                // unicode graphemes, rather than bytes.
+                                // ? This is incredibly inefficient. Is there a better way?
+                                let current_line_old = self.buffer.get(self.current_line).unwrap().clone();
+                                let current_line = self.buffer.get_mut(self.current_line).unwrap();
+                                current_line.clear();
+                                for (i, cur) in current_line_old.graphemes(true).enumerate() {
+                                    current_line.push_str(cur);
+
+                                    if i == self.current_char - 2 {
+                                        current_line.push(c);
+                                    }
+                                }
                             }
 
                             self.move_cursor_right();
@@ -99,9 +107,16 @@ impl Handler for Editor {
                                 self.move_cursor_eocl();
                             }
                         } else {
-                            let current_char = self.current_char;
-                            let buffer = self.buffer.get_mut(self.current_line).unwrap();
-                            *buffer = buffer.char_indices().filter_map(|(i, c)| if i != current_char - 2 { Some(c) } else { None }).collect();
+                            // Find the correct character to be deleted. As with insertion,
+                            // graphemes must be used, and also like it, it is still
+                            // TODO: Incredibly inefficient
+                            let current_line_old = self.buffer.get(self.current_line).unwrap().clone();
+                            let current_line = self.buffer.get_mut(self.current_line).unwrap();
+                            for (i, (byte_pos, _)) in current_line_old.grapheme_indices(true).enumerate() {
+                                if i == self.current_char - 2 {
+                                    current_line.remove(byte_pos);
+                                }
+                            }
 
                             self.move_cursor_left();
                         }
