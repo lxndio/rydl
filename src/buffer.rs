@@ -3,8 +3,8 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new(init: bool) -> Buffer {
-        let mut buffer = Buffer { lines: Vec::new() };
+    pub fn new(init: bool) -> Self {
+        let mut buffer = Self { lines: Vec::new() };
 
         if init {
             buffer.push(String::new());
