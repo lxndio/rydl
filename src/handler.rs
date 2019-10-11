@@ -117,7 +117,7 @@ impl Handler for Editor {
                                 }
                             }
 
-                            self.move_cursor_left();
+                            self.move_cursor_left('.'); // TODO for current char
                         }
 
                         self.modified = true;
