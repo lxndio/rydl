@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 extern crate rlua;
 extern crate termion;
 
@@ -7,6 +9,7 @@ mod editor;
 mod handler;
 mod io;
 mod lua_handler;
+mod settings;
 mod util;
 
 use crate::editor::Editor;
