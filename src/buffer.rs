@@ -110,8 +110,12 @@ mod tests {
         buffer.push(String::from("Line 4"));
         buffer.push(String::from("Line 5"));
 
-        buffer.replace_line(2, String::from("New line 2"));
-        buffer.replace_line(5, String::from("New line 5"));
+        buffer
+            .replace_line(2, String::from("New line 2"))
+            .expect("Could not replace line");
+        buffer
+            .replace_line(5, String::from("New line 5"))
+            .expect("Could not replace line");
 
         assert_eq!("New line 2", buffer.get(2).unwrap());
         assert_eq!("New line 5", buffer.get(5).unwrap());

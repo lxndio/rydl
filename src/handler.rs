@@ -73,14 +73,17 @@ impl Handler for Editor {
                             self.current_line += 1;
                             self.move_cursor_new_line();
                         } else {
-                            if self.current_char == self.buffer.get(self.current_line).unwrap().len() + 1 {
+                            if self.current_char
+                                == self.buffer.get(self.current_line).unwrap().len() + 1
+                            {
                                 // At the end of the line, the character can simply be appended
                                 self.buffer.get_mut(self.current_line).unwrap().push(c);
                             } else {
                                 // Find the correct place to insert the character. Seperated by
                                 // unicode graphemes, rather than bytes.
                                 // ? This is incredibly inefficient. Is there a better way?
-                                let current_line_old = self.buffer.get(self.current_line).unwrap().clone();
+                                let current_line_old =
+                                    self.buffer.get(self.current_line).unwrap().clone();
                                 let current_line = self.buffer.get_mut(self.current_line).unwrap();
                                 current_line.clear();
                                 for (i, cur) in current_line_old.graphemes(true).enumerate() {
@@ -109,9 +112,12 @@ impl Handler for Editor {
                             // Find the correct character to be deleted. As with insertion,
                             // graphemes must be used, and also like it, it is still
                             // TODO: Incredibly inefficient
-                            let current_line_old = self.buffer.get(self.current_line).unwrap().clone();
+                            let current_line_old =
+                                self.buffer.get(self.current_line).unwrap().clone();
                             let current_line = self.buffer.get_mut(self.current_line).unwrap();
-                            for (i, (byte_pos, _)) in current_line_old.grapheme_indices(true).enumerate() {
+                            for (i, (byte_pos, _)) in
+                                current_line_old.grapheme_indices(true).enumerate()
+                            {
                                 if i == self.current_char - 2 {
                                     current_line.remove(byte_pos);
                                 }
