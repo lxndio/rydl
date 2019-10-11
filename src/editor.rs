@@ -7,6 +7,7 @@ use termion::{color, terminal_size};
 use crate::buffer::Buffer;
 use crate::drawer::Drawer;
 use crate::handler::Handler;
+use crate::settings::Settings;
 
 #[derive(PartialEq)]
 pub enum Mode {
@@ -41,6 +42,8 @@ pub struct Editor {
 
     pub file_name: String,
 
+    pub settings: Settings,
+
     pub running: bool,
     pub modified: bool,
     pub top_line_changed: bool,
@@ -68,6 +71,8 @@ impl Editor {
             mode: Mode::Command,
 
             file_name: String::new(),
+
+            settings: Settings::new(),
 
             running: true,
             modified: false,
@@ -102,18 +107,32 @@ impl Editor {
     }
 
     /// Used to move the cursor to the left if possible (both the on-screen and the internal buffer cursor).
-    pub fn move_cursor_left(&mut self) {
-        if self.current_char > 1 {
+    pub fn move_cursor_left(&mut self, c: char) {
+        if self.current_char > 1 {            
+            // If the character to move over is a tab, we need to set back the cursor by multiple single width chars
+            if c == '\t' {
+                let sub = (self.settings.tab_width - (self.current_char % self.settings.tab_width) + 1) as u16;
+                self.x -= if sub != 5 { sub } else { 1 };
+            } else {
+                self.x -= 1;
+            }
+
             self.current_char -= 1;
-            self.x -= 1;
         }
     }
 
     /// Used to move the cursor to the right if possible (both the on-screen and the internal buffer cursor).
-    pub fn move_cursor_right(&mut self) {
+    pub fn move_cursor_right(&mut self, c: char) {
         if self.current_char <= self.buffer.get(self.current_line).unwrap().len() {
+            // If the character to move over is a tab, we need to advance the cursor by multiple single width chars
+            if c == '\t' {
+                let add = (self.settings.tab_width - (self.current_char % self.settings.tab_width) + 1) as u16;
+                self.x += if add != 5 { add } else { 1 };
+            } else {
+                self.x += 1;
+            }
+
             self.current_char += 1;
-            self.x += 1;
         }
     }
 

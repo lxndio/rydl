@@ -71,11 +71,12 @@ impl Drawer for Editor {
         // Draw column and row
         write!(
             stdout,
-            "{}{}{},{}",
+            "{}{}{},{},{}",
             color::Fg(color::Black),
             termion::cursor::Goto(self.width - 10, self.height - 1),
             self.current_line,
             self.current_char,
+            self.x
         )
         .unwrap();
 
@@ -197,12 +198,30 @@ impl Drawer for Editor {
         for i in from..=to {
             let line = self.buffer.get(i).unwrap();
 
+            // Replace tabs with spaces for printing
+            let mut new_line = String::new();
+            for (i, c) in line.chars().enumerate() {
+                match c {
+                    '\t' => {
+                        new_line.push_str(
+                            std::iter::repeat(" ")
+                                .take(self.settings.tab_width - (i % self.settings.tab_width))
+                                .collect::<String>()
+                                .as_str(),
+                        );
+                    }
+                    _ => {
+                        new_line.push(c);
+                    }
+                }
+            }
+
             write!(
                 stdout,
                 "{}{}{}",
                 termion::cursor::Goto(self.start_x(), y),
                 termion::clear::UntilNewline,
-                line
+                new_line
             )
             .unwrap();
 

@@ -36,7 +36,7 @@ impl Handler for Editor {
                         self.draw();
                     }
                     Key::Char('h') => {
-                        self.move_cursor_left();
+                        self.move_cursor_left('.'); // TODO see below
                     }
                     Key::Char('j') => {
                         self.move_cursor_down();
@@ -45,7 +45,7 @@ impl Handler for Editor {
                         self.move_cursor_up();
                     }
                     Key::Char('l') => {
-                        self.move_cursor_right();
+                        self.move_cursor_right('.'); // TODO replace '.' with current char (under cursor)
                     }
                     Key::Char(':') => {
                         self.read_command();
@@ -92,7 +92,7 @@ impl Handler for Editor {
                                 }
                             }
 
-                            self.move_cursor_right();
+                            self.move_cursor_right(c);
                         }
 
                         self.modified = true;
@@ -117,7 +117,7 @@ impl Handler for Editor {
                                 }
                             }
 
-                            self.move_cursor_left();
+                            self.move_cursor_left('.'); // TODO for current char
                         }
 
                         self.modified = true;
