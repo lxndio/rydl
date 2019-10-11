@@ -1,5 +1,5 @@
-extern crate termion;
 extern crate rlua;
+extern crate termion;
 
 mod buffer;
 mod drawer;
